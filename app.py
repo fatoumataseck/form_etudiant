@@ -1,12 +1,13 @@
-from flask import Flask,render_template,request,redirect,url_for,flash,session, escape
+from flask import Flask,render_template,request,redirect,url_for,flash,session, escape,jsonify
 from flask_sqlalchemy import *
 from sqlalchemy import *
 import datetime
+from wtforms import *
+from flask_wtf import FlaskForm
 app= Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:fatou@localhost/form_etudiant'
 db = SQLAlchemy(app)
-app.secret_key=b'flash message'
-app.config['UPLOAD_FOLDER']='/var/www/html/sonatel/static/font/profiles/'
+app.config['SECRET_KEY'] = 'secret'
 
 #*****************************************************************************************************************
 #                                      CONNEXION BDD ET CREATION TABLE                                      
@@ -25,7 +26,7 @@ class Etudiant(db.Model):
         self.nom=nom
         self.dn=dn
     def __repr__(self):
-        return '<etudiant %r,%r,%r,%r>' % (self.matricule,self.nom,self.prenom,self.dn)
+        return '<etudiant %r>' % self.matricule,self.nom,self.prenom,self.dn
 
 class Filiere(db.Model):
     __tablename__='filiere'
@@ -68,44 +69,51 @@ class Inscription(db.Model):
 
 db.create_all()
 
+class Form(FlaskForm):
+    id_filiere=SelectField('id_filiere',choices=[(1,'AI'),(2,'developpement web'),(3,'data artisan'),(4,'referent digital')])
+    classe=SelectField('classe',choices=[])
+    montant_ins=TextField('montant_ins')
+
+
+
 #*****************************************************************************************************************
 #                                    PAGE FORMULAIRE                                      
 #***************************************************************************************************************
-@app.route('/' )
+@app.route('/',methods=['GET','POST'] )
 def acc():
     today = datetime.date.today()
     y=today.year
-    print(y)
     etu=db.session.query(func.max(Etudiant.id)).one() 
     mat="SA-"+str(y)+"-"+str(etu[0])
     fi=Filiere.query.all()
     clas=Classe.query.all()
-    return render_template('pages/formulaire.html',mat=mat,fi=fi,clas=clas)
+    form=Form()
+    form.classe.choices=[(classe.id,classe.libelle_classe) for classe in Classe.query.filter_by(id_filiere=1).all()]
+    if request.method == 'POST':
+        classe = Classe.query.filter_by(id=form.classe.data).first()
+        return '<h3>filiere:{},classe:{},montant_ins:{},mensualite:{}</h3>'.format(form.id_filiere.data, classe.libelle_classe,classe.montant_ins,classe.mensualite)
+        
+    return render_template('pages/formulaire.html',mat=mat,fi=fi,clas=clas,form=form)
+ 
+@app.route('/classe/<id_filiere>')
+def classe(id_filiere): 
+    classes = Classe.query.filter_by(id_filiere=id_filiere).all()
+    classeArray = []
+    for classe in classes:
+        classeObj = {}
+        classeObj['id'] = classe.id
+        classeObj['libelle_classe'] = classe.libelle_classe
+        classeObj['montant_ins'] = classe.montant_ins
+        classeObj['mensualite'] = classe.mensualite
 
-#*****************************************************************************************************************
-#                                    INSERTION                                     
-#***************************************************************************************************************
+        classeArray.append(classeObj)
+    return jsonify({'classes' : classeArray})
 
-@app.route('/', methods=['POST'])
-def ins():
-    matricule=request.form['matricule']
-    nom=request.form['nom']
-    prenom=request.form['prenom']
-    dn=request.form['dn']
-    #db.session.add(Etudiant(matricule,nom,prenom,dn))
-    #db.session.commit() 
 
-    """#filiere=request.form['filiere']
-    classe=request.form['classe']
-    montant=request.form['montant']
-    mensualite=request.form['mensualite']
-    total=request.form['total']
-    date_ins=request.form['date_ins']
-    annee_aca=request.form['annee_aca']
-    db.session.add(Inscription(date_ins,annee_aca,id_etu,classe))
-    db.session.commit() 
-    """
-    return redirect(url_for('acc'))
+
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

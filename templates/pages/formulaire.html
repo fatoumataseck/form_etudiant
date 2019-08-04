@@ -6,7 +6,6 @@
     <meta charset="utf-8">
     <link rel="stylesheet" href="{{url_for('static' , filename='css/acc1.css')}}">
     <link rel="shortcut icon" href="{{url_for('static',filename='font/index.jpeg')}}">
-    <!-- <link rel="stylesheet" href="{{url_for('static' , filename='css/bootstrap.min.css')}}"> -->
 
 </head>
 <div>
@@ -19,7 +18,7 @@
             </p>
             <img class="logo" src="{{url_for('static' , filename='font/Logo-Sonatel-Academy-tete-gif-1.gif')}}" alt="logo ">
 
-            <marquee direction="left">Sonatel academy! La première école de codage gratuit !!!!</marquee>
+            <h3 direction="left">Sonatel academy! La première école de codage gratuit !!!!</h3>
         </header>
 
         <form action="" method="POST">
@@ -44,29 +43,14 @@
 
             <fieldset>
                 <legend>Inscription</legend>
-
-                <label class="label">Filiere :</label>
-                <select required="required" name="filiere">
-                    <option disabled="disabled" selected="selecteded" value="">Choisir une filiere</option>
-                    {% for i in fi %}
-                        <option value={{i.id}}>{{i.libelle_filiere}}</option>
-                    {% endfor %}
-                </select>
-
-                <label class="label">Classe :</label>
-                <select required="required" name="classe">
-                    <option disabled="disabled" selected="selecteded" value="">Choisir une classe</option>
-                    {% for i in clas %}
-                        <option value={{i.id}}>{{i.libelle_classe}}</option>
-                    {% endfor %}
-                </select>
-
+                <label class="label">Filiere :</label> {{ form.csrf_token }} {{ form.id_filiere }}
+                <label class="label">Classe :</label> {{ form.classe }}
 
                 <label class="label">Montant inscription :</label>
-                <input required="required" class="input" type="text" name="matricule"><br>
+                <input id="montant_ins" required="required" class="input" type="text" name="montant_ins"><br>
 
                 <label class="label">Mensualité :</label>
-                <input required="required" class="input" type="text" name="nom"><br>
+                <input id="mensualite" required="required" class="input" type="text" name="nom"><br>
 
                 <label class="label" for="prenom" name="prenom">Total inscription :</label>
                 <input class="input" type="text" name="prenom"><br>
@@ -102,5 +86,43 @@
         </footer>
 </div>
 </body>
+<script>
+    let id_filiere_select = document.getElementById('id_filiere');
+    let classe_select = document.getElementById('classe');
+    let montant_ins_select = document.getElementById('montant_ins')
+
+    id_filiere_select.onchange = function() {
+        id_filiere = id_filiere_select.value;
+        fetch('/classe/' + id_filiere).then(function(response) {
+            response.json().then(function(data) {
+                let optionHTML = '';
+                for (let classe of data.classes) {
+                    optionHTML += '<option value="' + classe.id + '">' + classe.libelle_classe + '</option>';
+                }
+                classe_select.innerHTML = optionHTML;
+            });
+        });
+    }
+    let value = '';
+    classe_select.onchange = function() {
+        classe1 = classe_select.value;
+        fetch('/classe/' + id_filiere).then(function(response) {
+            response.json().then(function(data) {
+
+                for (let classe of data.classes) {
+                    if (classe.id == classe1) {
+                        value = classe.montant_ins;
+                        // value1 += '<input value="' + value + '">';
+                        // document.getElementById("response").innerHTML = "You selected: " + x;
+
+                        alert(value);
+                    }
+                }
+                montant_ins_select.innerHTML = value1;
+            });
+        });
+
+    }
+</script>
 
 </html>
