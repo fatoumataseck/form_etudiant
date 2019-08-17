@@ -5,6 +5,7 @@
     <title>ma page </title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="{{url_for('static' , filename='css/acc1.css')}}">
+
     <link rel="shortcut icon" href="{{url_for('static',filename='font/index.jpeg')}}">
 
 </head>
@@ -21,52 +22,61 @@
             <h3 direction="left">Sonatel academy! La première école de codage gratuit !!!!</h3>
         </header>
 
+
         <form action="" method="POST">
-            <label class="radio">Nouveau<input required="required" class="radio1" type="radio" name="ins" value="Nouveau"></label>
-            <label class="radio">Ancien<input required="required" class="radio1" type="radio" name="ins" value="Ancien"></label>
+            <label class="radio">Nouveau<input id="nouveau" required="required" class="radio1" type="radio" name="ins" value="Nouveau"></label>
+            <label class="radio">Ancien<input id="ancien" required="required" class="radio1" type="radio" name="ins" value="Ancien"></label>
 
             <fieldset>
                 <legend>Etudiant</legend>
 
                 <label class="label">Matricule :</label>
-                <input required="required" class="input" type="text" name="matricule" readonly="true" value="{{mat}}"><br>
+                <input id="matricule" required="required" class="input" type="text" name="matricule" value="" readonly><br>
 
                 <label class="label">Nom :</label>
-                <input required="required" class="input" type="text" name="nom"><br>
+                <input id="nom" required="required" class="input" type="text" name="nom" value="" readonly><br>
 
                 <label class="label">Prenom :</label>
-                <input class="input" type="text" name="prenom" required="required"><br>
+                <input id="prenom" class="input" type="text" name="prenom" required="required" value="" readonly><br>
 
                 <label class="label">Date de naissance :</label>
-                <input required="required" class="input" type="date" name="dn" max="2003-12-31" min="1988-12-31"><br>
+                <input id="dn" required="required" class="input" type="date" name="dn" max="2003-12-31" min="1988-12-31" value="" readonly><br>
             </fieldset>
 
             <fieldset>
                 <legend>Inscription</legend>
-                <label class="label">Filiere :</label> {{ form.csrf_token }} {{ form.id_filiere }}
-                <label class="label">Classe :</label> {{ form.classe }}
+                <label class="label">Filiere :</label>
+                <select id="id_filiere" required name="filiere">
+                    <option selected disabled value="">selectionner une filiere</option>
+                     {% for i in fi %}
+                        <option value={{i[0]}}>{{i[1]}}</option>                     
+                    {% endfor %}
+                </select>
+
+                <label class="label">Classe :</label>
+                <select id="classe" required name="classe">
+                </select>
 
                 <label class="label">Montant inscription :</label>
-                <input id="montant_ins" required="required" class="input" type="text" name="montant_ins"><br>
+                <input id="montant_ins" required="required" class="input" type="text" name="montant_ins" value="" readonly><br>
 
                 <label class="label">Mensualité :</label>
-                <input id="mensualite" required="required" class="input" type="text" name="nom"><br>
+                <input id="mensualite" required="required" class="input" type="text" name="mensualite" value="" readonly><br>
 
                 <label class="label" for="prenom" name="prenom">Total inscription :</label>
-                <input class="input" type="text" name="prenom"><br>
+                <input id="total" class="input" type="text" name="total" value="" readonly><br>
 
                 <label class="label">Date inscription :</label>
-                <input required="required" class="input" type="date" name="naissance" max="2003-12-31" min="1988-12-31"><br>
+                <input id="date_ins" required="required" class="input" type="date" name="date_ins" value="" readonly><br>
 
                 <label class="label" for="prenom" name="prenom">Année academique :</label>
-                <input class="input" type="text" name="prenom"><br>
+                <input id="annee_aca" class="input" type="text" name="annee_aca" readonly><br>
             </fieldset>
 
-            <button class="submit" type="submit">Enregistrer</button>
+            <button id="submit" class="submit" type="submit">Enregistrer</button>
             <button class="reset" type="reset">Annuler</button>
 
         </form>
-
 
         <footer>
 
@@ -86,42 +96,217 @@
         </footer>
 </div>
 </body>
+
 <script>
+    let nouveau_select = document.getElementById('nouveau');
+    let matricule_select = document.getElementById('matricule');
+    let nom_select = document.getElementById('nom');
+    let prenom_select = document.getElementById('prenom');
+    let dn_select = document.getElementById('dn');
+
     let id_filiere_select = document.getElementById('id_filiere');
     let classe_select = document.getElementById('classe');
-    let montant_ins_select = document.getElementById('montant_ins')
-
-    id_filiere_select.onchange = function() {
-        id_filiere = id_filiere_select.value;
-        fetch('/classe/' + id_filiere).then(function(response) {
+    let montant_ins_select = document.getElementById('montant_ins');
+    let mensualite_select = document.getElementById('mensualite');
+    let total_select = document.getElementById('total');
+    let submit_select = document.getElementById('submit');
+    //***********************************************************************************************************************************************************************************************
+    //NOUVEAU//
+    //**********************************************************************************************************************************************************************************************                                                                                   
+    nouveau.onclick = function() {
+        matricule = matricule_select.value;
+        fetch('/matricule').then(function(response) {
             response.json().then(function(data) {
-                let optionHTML = '';
-                for (let classe of data.classes) {
-                    optionHTML += '<option value="' + classe.id + '">' + classe.libelle_classe + '</option>';
+                for (let mat of data.etu) {
+                    matricule_select.value = mat;
+                    matricule_select.readOnly = true;
                 }
-                classe_select.innerHTML = optionHTML;
             });
         });
-    }
-    let value = '';
-    classe_select.onchange = function() {
-        classe1 = classe_select.value;
-        fetch('/classe/' + id_filiere).then(function(response) {
+
+        montant_ins_select.readOnly = true;
+        mensualite_select.readOnly = true;
+        total_select.readOnly = true;
+        prenom_select.readOnly = false;
+        nom_select.readOnly = false;
+        dn_select.readOnly = false;
+        document.getElementById('nom').value = "";
+        document.getElementById('prenom').value = "";
+        document.getElementById('dn').value = "";
+        document.getElementById('montant_ins').value = "";
+        document.getElementById('mensualite').value = "";
+        document.getElementById('total').value = "";
+        fetch('/filiere').then(function(response) {
             response.json().then(function(data) {
+                let optionHTML = '<option selected disabled value=""> Selectionner une filiere</option>';
+                for (let filiere of data.filieres) {
+                    optionHTML += '<option value="' + filiere.id + '">' + filiere.libelle_filiere + '</option>';
+                }
+                id_filiere_select.innerHTML = optionHTML;
+            });
 
-                for (let classe of data.classes) {
-                    if (classe.id == classe1) {
-                        value = classe.montant_ins;
-                        // value1 += '<input value="' + value + '">';
-                        // document.getElementById("response").innerHTML = "You selected: " + x;
+        });
 
-                        alert(value);
+
+        var today = new Date();
+        document.getElementById('date_ins').valueAsDate = today;
+        var mois = today.getMonth() + 1
+        var an = today.getFullYear()
+        if (mois > 7) {
+            var annee = an.toString() + "-" + (an + 1).toString();
+            document.getElementById('annee_aca').value = annee;
+        } else {
+            var annee0 = (an - 1).toString() + "-" + an.toString();
+            document.getElementById('annee_aca').value = annee;
+
+        }
+        let optionHTML = '<option selected disabled value=""> Selectionner une classe</option>';
+        classe_select.innerHTML = optionHTML;
+        id_filiere_select.onchange = function() {
+            id_filiere = id_filiere_select.value;
+            fetch('/classe/' + id_filiere).then(function(response) {
+                response.json().then(function(data) {
+                    for (let classe of data.classes) {
+                        optionHTML += '<option value="' + classe.id + '">' + classe.libelle_classe + '</option>';
                     }
-                }
-                montant_ins_select.innerHTML = value1;
-            });
-        });
+                    classe_select.innerHTML = optionHTML;
+                });
 
+            });
+        }
+        classe_select.onchange = function() {
+            classe1 = classe_select.value;
+            fetch('/classe/' + id_filiere).then(function(response) {
+                response.json().then(function(data) {
+                    let value = '';
+                    for (let classe of data.classes) {
+                        if (classe.id == classe1) {
+                            value = classe.montant_ins;
+                            value1 = classe.mensualite;
+                            // montant_ins_select.getAttribute('value');
+                            montant_ins_select.value = value;
+                            mensualite_select.value = value1;
+                            total_select.value = value + 10 * value1;
+                        }
+                    }
+                });
+            });
+        }
+
+    }
+
+
+
+    //***********************************************************************************************************************************************************************************************
+    //ANCIEN//
+    //**********************************************************************************************************************************************************************************************                                                                                   
+    ancien.onclick = function() {
+        document.getElementById('nom').value = "";
+        document.getElementById('prenom').value = "";
+        document.getElementById('dn').value = "";
+        document.getElementById('montant_ins').value = "";
+        document.getElementById('mensualite').value = "";
+        document.getElementById('total').value = "";
+        prenom.readOnly = true;
+        nom.readOnly = true;
+        dn.readOnly = true;
+
+
+        var today = new Date();
+        document.getElementById('date_ins').valueAsDate = today;
+        var mois = today.getMonth() + 1
+        var an = today.getFullYear()
+        if (mois > 7) {
+            var annee = an.toString() + "-" + (an + 1).toString();
+            document.getElementById('annee_aca').value = annee;
+        } else {
+            var annee0 = (an - 1).toString() + "-" + an.toString();
+            document.getElementById('annee_aca').value = annee;
+        }
+
+        matricule_select.value = "";
+        matricule_select.readOnly = false;
+        matricule_select.onchange = function() {
+            matricule = matricule_select.value;
+            fetch('/recherche/' + matricule).then(function(response) {
+                response.json().then(function(data) {
+                    let optionHTML = '<option selected disabled value=""> Selectionner une filiere</option>';
+                    for (let etudiant of data.etudiants) {
+                        matricule_select.value = etudiant.matricule;
+                        nom_select.value = etudiant.nom;
+                        nom_select.readOnly = true;
+                        prenom_select.value = etudiant.prenom;
+                        prenom_select.readOnly = true;
+                        dn_select.value = convert(etudiant.dn);
+                        optionHTML += '<option value="' + etudiant.id_filiere + '">' + etudiant.libelle_filiere + '</option>';
+                    }
+                    id_filiere_select.innerHTML = optionHTML;
+                });
+
+            });
+        }
+        id_filiere_select.onchange = function() {
+            id_filiere = id_filiere_select.value;
+            fetch('/classe/' + id_filiere).then(function(response) {
+                response.json().then(function(data) {
+                    let optionHTML = '<option selected disabled value=""> Selectionner une classe</option>';
+                    for (let classe of data.classes) {
+                        optionHTML += '<option value="' + classe.id + '">' + classe.libelle_classe + '</option>';
+                    }
+                    classe_select.innerHTML = optionHTML;
+                });
+
+            });
+        }
+
+
+        classe_select.onchange = function() {
+            classe1 = classe_select.value;
+            fetch('/classe/' + id_filiere).then(function(response) {
+                response.json().then(function(data) {
+                    let value = '';
+                    for (let classe of data.classes) {
+                        if (classe.id == classe1) {
+                            value = classe.montant_ins;
+                            value1 = classe.mensualite;
+                            // montant_ins_select.getAttribute('value');
+                            montant_ins_select.value = value;
+                            mensualite_select.value = value1;
+                            total_select.value = value + 10 * value1;
+
+                        }
+                    }
+                });
+            });
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+    function convert(str) {
+        var date = new Date(str),
+            mnth = ("0" + (date.getMonth() + 1)).slice(-2),
+            day = ("0" + date.getDate()).slice(-2);
+        return [date.getFullYear(), mnth, day].join("-");
+    }
+
+
+    function lire() {
+        $('#prenom').attr('readonly', true);
+        $('#nom').attr('readonly', true);
+        document.getElementById('sexe').disabled = true
+        $('#date_naissance').attr('readonly', true);
+        $('#lieu_naissance').attr('readonly', true);
+        $('#adresse').attr('readonly', true);
+        $('#email').attr('readonly', true);
+        $('#telephone').attr('readonly', true);
     }
 </script>
 
